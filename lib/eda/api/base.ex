@@ -4,6 +4,7 @@ defmodule EDA.Api.Base do
   @token Application.get_env(:eda, :token)
   @lib_url EDA.MixProject.project()[:source_url]
   @lib_vsn EDA.MixProject.project()[:version]
+  @endpoint "/api/v9"
 
   def connect() do
     Mint.HTTP.connect(:https, "discord.com", 443)
@@ -12,14 +13,14 @@ defmodule EDA.Api.Base do
   def request(conn, method, path, headers, body \\ nil)
 
   def request(conn, method, path, [], body) do
-    {:ok, conn, ref} = Mint.HTTP.request(conn, method, path, default_headers(), body)
-    receive_next_and_stream(conn)
+    {:ok, conn, ref} = Mint.HTTP.request(conn, method, @endpoint <> path, default_headers(), body)
+    :ok = receive_next_and_stream(conn)
     response_waiting_loop(conn, ref)
   end
 
   def request(conn, method, path, headers, body) do
-    {:ok, conn, ref} = Mint.HTTP.request(conn, method, path, default_headers() ++ headers, body)
-    receive_next_and_stream(conn)
+    {:ok, conn, ref} = Mint.HTTP.request(conn, method, @endpoint <> path, default_headers() ++ headers, body)
+    :ok = receive_next_and_stream(conn)
     response_waiting_loop(conn, ref)
   end
 
@@ -48,6 +49,7 @@ defmodule EDA.Api.Base do
       case response do
         {_action, _ref, _data} ->
           handle_response(conn, response)
+          :ok
 
         {:done, _ref} ->
           :ok
