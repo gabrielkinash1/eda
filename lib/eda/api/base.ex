@@ -10,15 +10,7 @@ defmodule EDA.Api.Base do
     Mint.HTTP.connect(:https, "discord.com", 443)
   end
 
-  def request(conn, method, path, headers, body \\ nil)
-
-  def request(conn, method, path, [], body) do
-    {:ok, conn, ref} = Mint.HTTP.request(conn, method, @endpoint <> path, default_headers(), body)
-    :ok = receive_next_and_stream(conn)
-    response_waiting_loop(conn, ref)
-  end
-
-  def request(conn, method, path, headers, body) do
+  def request(conn, method, path, headers \\ [], body \\ nil) do
     {:ok, conn, ref} = Mint.HTTP.request(conn, method, @endpoint <> path, default_headers() ++ headers, body)
     :ok = receive_next_and_stream(conn)
     response_waiting_loop(conn, ref)
